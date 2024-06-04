@@ -1,3 +1,4 @@
+import cheerio from "cheerio";
 import logger from "./logger";
 let ua:string = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 export async function scrapeSearch() {
@@ -31,7 +32,10 @@ export function filterLinks(links:string[]) {
     logger.info(`🔗 Filtering ${links.length} links!`)
     for (let i = 0; i < links.length; i++) {
         let path = new URL(links[i]).pathname
-        if ((links[i].split("?")[1] != "coupon=") && (links[i].includes("?coupon=") || startsUpper(path.replaceAll("/","")))) {
+        if ((links[i].split("?")[1] != "coupon=") /* make sure there are no blank coupons */ 
+        && (links[i].includes("?coupon=") /* make sure the coupon url param exists */
+         || startsUpper(path.replaceAll("/",""))) /* might be a redirect page to a coupon */
+        ) {
             fl.push(links[i].split("&")[0])
         } 
     }
@@ -39,4 +43,38 @@ export function filterLinks(links:string[]) {
     logger.info(`🔗 Got ${fl.length} (${Math.floor((fl.length / links.length)*100)}%) possible coupons!`)
     
     return fl.sort()
+}
+
+export async function sortByPrice(links:string[]) {
+    let sorted = {"free":[],"under5":[],"under10":[],"under25":[],"etc":[]}
+    for (let i = 0; i < links.length; i++) {
+        if (!new URL(links[i]).pathname.startsWith("/tld/")) {
+            // @ts-expect-error
+            sorted["etc"].push(links[i])
+        } else {
+            let res = await (await fetch(links[i])).text();
+            let c = cheerio.load(res)
+            if (c(".tldPageLogoPricingDescription").first().text() != "with coupon") {
+                return;
+            }
+            let price = Number(c(".tldPageLogoPricingPrice").first().text().slice(1))
+            if (price == 0.00 || price == 0) {
+                // @ts-expect-error
+                sorted["free"].push(links[i])
+            } else if (price <= 5) {
+                // @ts-expect-error
+                sorted["under5"].push(links[i])
+            } else if (price <= 10) {
+                // @ts-expect-error
+                sorted["under10"].push(links[i])
+            }  else if (price <= 25) {
+                // @ts-expect-error
+                sorted["under25"].push(links[i])
+            } else {
+                // @ts-expect-error
+                sorted["etc"].push(links[i])
+            }
+        }
+    }
+    return sorted
 }
