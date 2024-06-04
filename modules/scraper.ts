@@ -8,6 +8,7 @@ export async function scrapeSearXNG() {
     })).text()
     let c = cheerio.load(res)
     let lastPage = parseInt(c('input.page_number').last().val() as string);
+    // "recursively" scrape for links
     for (let i = 1; i > lastPage; i++) {
 
     }
