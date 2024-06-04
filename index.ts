@@ -1,4 +1,5 @@
-import { scrapeSearch } from "./modules/scraper";
+import { scrapeSearch,filterLinks } from "./modules/scraper";
 import logger from "./modules/logger";
-logger.info("Scraping Links!")
-scrapeSearch()
+let l = await scrapeSearch()
+let fl = filterLinks(l)
+console.log(fl)
