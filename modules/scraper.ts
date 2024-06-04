@@ -6,11 +6,12 @@ export async function scrapeSearch() {
     let start = Date.now()
     for (let i = 1; i < 13; i++) {
     
-    let res = await (await fetch("https://moae.sbs/search?q=site:porkbun.com%20%22?coupon=%22&format=json", {
+    let res = await (await fetch(`https://moae.sbs/search?q=site:porkbun.com%20%22?coupon=%22&format=json&pageno=${i}`, {
         "headers": {
             "User-Agent":ua
         }
     })).json()
+    //console.log(res.results)
     for (let b = 0; b < res.results.length; b++) {
         links.push(res.results[b].url);
     }
@@ -30,11 +31,9 @@ export function filterLinks(links:string[]) {
     logger.info(`🔗 Filtering ${links.length} links!`)
     for (let i = 0; i < links.length; i++) {
         let path = new URL(links[i]).pathname
-        if (path.includes("?coupon=")) {
+        if (links[i].includes("?coupon=") || startsUpper(path.replaceAll("/",""))) {
             fl.push(links[i])
-        } else if (startsUpper(path.replaceAll("/",""))) { // might be a coupon redirect
-            fl.push(links[i])
-        }
+        } 
     }
     logger.info(`🔗 Got ${fl.length} possible coupons!`)
     return fl
