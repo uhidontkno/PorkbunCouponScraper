@@ -35,6 +35,8 @@ export function filterLinks(links:string[]) {
             fl.push(links[i].split("&")[0])
         } 
     }
-    logger.info(`🔗 Got ${fl.length} possible coupons!`)
-    return fl
+    fl = [...new Set(fl)]
+    logger.info(`🔗 Got ${fl.length} (${Math.floor((fl.length / links.length)*100)}%) possible coupons!`)
+    
+    return fl.sort()
 }
