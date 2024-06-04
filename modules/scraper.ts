@@ -31,8 +31,8 @@ export function filterLinks(links:string[]) {
     logger.info(`🔗 Filtering ${links.length} links!`)
     for (let i = 0; i < links.length; i++) {
         let path = new URL(links[i]).pathname
-        if (links[i].includes("?coupon=") || startsUpper(path.replaceAll("/",""))) {
-            fl.push(links[i])
+        if ((links[i].split("?")[1] != "coupon=") && (links[i].includes("?coupon=") || startsUpper(path.replaceAll("/","")))) {
+            fl.push(links[i].split("&")[0])
         } 
     }
     logger.info(`🔗 Got ${fl.length} possible coupons!`)
