@@ -47,16 +47,25 @@ export function filterLinks(links:string[]) {
 
 export async function sortByPrice(links:string[]) {
     let sorted = {"free":[],"under5":[],"under10":[],"under25":[],"etc":[]}
+    let workingcoupons = 0;
+    logger.info(`💵 Checking coupons...`)
     for (let i = 0; i < links.length; i++) {
         if (!new URL(links[i]).pathname.startsWith("/tld/")) {
             // @ts-expect-error
             sorted["etc"].push(links[i])
         } else {
-            let res = await (await fetch(links[i])).text();
-            let c = cheerio.load(res)
-            if (c(".tldPageLogoPricingDescription").first().text() != "with coupon") {
-                return;
+            let res:any = await fetch(links[i])
+            if (!res.ok) {
+                logger.warn(`Porkbun threw non-ok status code of ${res.status}`)
             }
+            res = await res.text()
+            if (res == "") {
+                logger.error(`Porkbun has flagged us (because we're botting them)! Giving up.`)
+                return {"error":"flagged"}
+            }
+            let c = cheerio.load(res)
+            if (c(".tldPageLogoPricingDescription").first().text() == "with coupon") {
+            workingcoupons++;
             let price = Number(c(".tldPageLogoPricingPrice").first().text().slice(1))
             if (price == 0.00 || price == 0) {
                 // @ts-expect-error
@@ -75,6 +84,8 @@ export async function sortByPrice(links:string[]) {
                 sorted["etc"].push(links[i])
             }
         }
+        }
     }
+    logger.info(`🔗 ${workingcoupons} working coupons (${Math.floor((workingcoupons / links.length)* 100) }% working)`)
     return sorted
 }
