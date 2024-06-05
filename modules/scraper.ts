@@ -5,7 +5,7 @@ export async function scrapeSearch() {
     let links:string[] = []
     logger.info(`🔍 Scraping for possible coupon links...`)
     let start = Date.now()
-    for (let i = 1; i < 13; i++) {
+    for (let i = 1; i < 15; i++) {
     
     let res = await (await fetch(`https://moae.sbs/search?q=site:porkbun.com%20%22?coupon=%22&format=json&pageno=${i}`, {
         "headers": {
