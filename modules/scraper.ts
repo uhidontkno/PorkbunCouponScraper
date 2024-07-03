@@ -25,6 +25,7 @@ export async function scrapeSearch() {
     return links
 }
 function startsUpper(str:string) {
+    if (!str) {return false}
     return str[0] == str[0].toUpperCase()
 }
 export function filterLinks(links:string[]) {
